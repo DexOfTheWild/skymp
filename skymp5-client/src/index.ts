@@ -56,6 +56,11 @@ import { SweetCameraEnforcementService } from "./services/services/sweetCameraEn
 import { SweetTaffyNicknamesService } from "./services/services/sweetTaffyNicknamesService";
 import { ServerJsVerificationService } from "./services/services/serverJsVerificationService";
 import { SweetTaffyEvalService } from "./services/services/sweetTaffyEvalService";
+import { ClientPluginHostService } from "./services/services/clientPluginHostService";
+import { ClientListener } from "./services/services/clientListener";
+import { ensureClientPluginHostGlobal } from "../../skymp5-plugin-api/clientPluginHost";
+
+ensureClientPluginHostGlobal();
 
 once("update", () => {
   Utility.setINIBool("bAlwaysActive:General", true);
@@ -67,7 +72,7 @@ const main = () => {
   try {
     const controller = SpApiInteractor.getControllerInstance();
 
-    const listeners = [
+    const listeners: ClientListener[] = [
       new BlockPapyrusEventsService(sp, controller),
       new LoadGameService(sp, controller),
       new SinglePlayerService(sp, controller),
@@ -101,6 +106,7 @@ const main = () => {
       new DisableDifficultySelectionService(sp, controller),
       new WorldCleanerService(sp, controller),
       new LoadOrderVerificationService(sp, controller),
+      new ClientPluginHostService(sp, controller),
       new BrowserService(sp, controller),
       new AuthService(sp, controller),
       new NetInfoService(sp, controller),

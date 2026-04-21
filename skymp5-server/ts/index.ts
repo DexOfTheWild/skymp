@@ -32,6 +32,7 @@ import * as os from "os";
 import * as manifestGen from "./manifestGen";
 import { createScampServer } from "./scampNative";
 import { MetricsSystem, tickDurationHistogram, tickDurationSummary } from "./systems/metricsSystem";
+import { loadServerPluginSystems } from "./plugins/serverPluginLoader";
 
 const gamemodeCache = new Map<string, string>();
 
@@ -215,6 +216,13 @@ const main = async () => {
     process.exit(-1);
   }
   const ctx = { svr: server, gm: new EventEmitter() };
+
+  const pluginSystems = await loadServerPluginSystems({
+    ctx,
+    log,
+    settings: settingsObject.allSettings,
+  });
+  systems.push(...pluginSystems);
 
   console.log(`Current process ID is ${pid}`);
 

@@ -15,5 +15,8 @@
     },
     "skipLibCheck": true
   },
-  "include": ["ts"]
+  "include": [
+    "ts",
+    "../skymp5-plugin-api"
+  ]
 }
