@@ -92,6 +92,11 @@ void Register(Napi::Env env, Napi::Object& exports)
                   }));
       browser.Set("executeJavaScript",
                   Napi::Function::New(env, [](const Napi::CallbackInfo&) {}));
+      browser.Set("emitEvent",
+                  Napi::Function::New(env, [](const Napi::CallbackInfo&) {}));
+      browser.Set("setMediaPermissionPolicy",
+                  Napi::Function::New(env, [](const Napi::CallbackInfo&) {}));
+      break;
     case Backend::kTilted:
       browser.Set(
         "getBackend",
@@ -126,6 +131,14 @@ void Register(Napi::Env env, Napi::Object& exports)
                   Napi::Function::New(env,
                                       NapiHelper::WrapCppExceptions(
                                         BrowserApiTilted::ExecuteJavaScript)));
+      browser.Set("emitEvent",
+                  Napi::Function::New(env,
+                                      NapiHelper::WrapCppExceptions(
+                                        BrowserApiTilted::EmitEvent)));
+      browser.Set("setMediaPermissionPolicy",
+                  Napi::Function::New(env,
+                                      NapiHelper::WrapCppExceptions(
+                                        BrowserApiTilted::SetMediaPermissionPolicy)));
       break;
     case Backend::kNirnLab:
       browser.Set(
@@ -178,6 +191,21 @@ void Register(Napi::Env env, Napi::Object& exports)
           env,
           NapiHelper::WrapCppExceptions([](const Napi::CallbackInfo& info) {
             return BrowserApiNirnLab::GetInstance().ExecuteJavaScript(info);
+          })));
+      browser.Set(
+        "emitEvent",
+        Napi::Function::New(
+          env,
+          NapiHelper::WrapCppExceptions([](const Napi::CallbackInfo& info) {
+            return BrowserApiNirnLab::GetInstance().EmitEvent(info);
+          })));
+      browser.Set(
+        "setMediaPermissionPolicy",
+        Napi::Function::New(
+          env,
+          NapiHelper::WrapCppExceptions([](const Napi::CallbackInfo& info) {
+            return BrowserApiNirnLab::GetInstance().SetMediaPermissionPolicy(
+              info);
           })));
       break;
   }

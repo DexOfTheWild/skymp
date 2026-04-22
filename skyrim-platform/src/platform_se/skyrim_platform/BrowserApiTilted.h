@@ -12,4 +12,6 @@ Napi::Value IsFocused(const Napi::CallbackInfo& info);
 Napi::Value LoadUrl(const Napi::CallbackInfo& info);
 Napi::Value GetToken(const Napi::CallbackInfo& info);
 Napi::Value ExecuteJavaScript(const Napi::CallbackInfo& info);
+Napi::Value EmitEvent(const Napi::CallbackInfo& info);
+Napi::Value SetMediaPermissionPolicy(const Napi::CallbackInfo& info);
 }

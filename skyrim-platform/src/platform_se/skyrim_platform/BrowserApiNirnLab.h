@@ -1,9 +1,13 @@
 #pragma once
 
 #include <deque>
+#include <memory>
+#include <string>
+#include <utility>
 
 namespace NL::UI {
 class IUIPlatformAPI;
+struct Settings;
 }
 
 namespace NL::CEF {
@@ -24,14 +28,19 @@ public:
   Napi::Value LoadUrl(const Napi::CallbackInfo& info);
   Napi::Value GetToken(const Napi::CallbackInfo& info);
   Napi::Value ExecuteJavaScript(const Napi::CallbackInfo& info);
+  Napi::Value EmitEvent(const Napi::CallbackInfo& info);
+  Napi::Value SetMediaPermissionPolicy(const Napi::CallbackInfo& info);
 
 private:
   BrowserApiNirnLab();
 
+  NL::UI::Settings BuildSettings() const;
+  void ApplySettings();
   void UpdateVisible();
   void UpdateFocused();
   void UpdateUrl();
   void UpdateJs();
+  void UpdateEvents();
   void UpdateAll();
   void ApiInit();
 
@@ -39,8 +48,10 @@ private:
   NL::CEF::IBrowser* browser = nullptr;
   bool wantedIsVisible = false;
   bool wantedIsFocused = false;
+  bool secureOriginAudioCaptureEnabled = false;
   std::string wantedUrl;
   std::deque<std::string> jsExecQueue;
+  std::deque<std::pair<std::string, std::string>> eventExecQueue;
 
   static std::unique_ptr<BrowserApiNirnLab> g_instance;
 };
