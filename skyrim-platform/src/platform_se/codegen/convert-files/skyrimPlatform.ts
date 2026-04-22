@@ -78,6 +78,7 @@ export interface Browser {
   loadUrl(url: string): void
   getToken(): string
   executeJavaScript(src: string): void
+  setMediaPermissionPolicy(policy: 'default' | 'secureOriginAudioCapture'): void
 }
 export declare let browser: Browser
 
