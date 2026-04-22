@@ -77,6 +77,7 @@ export interface Browser {
   isFocused(): boolean
   loadUrl(url: string): void
   executeJavaScript(src: string): void
+  setMediaPermissionPolicy(policy: 'default' | 'secureOriginAudioCapture'): void
 }
 export declare let browser: Browser
 

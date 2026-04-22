@@ -4,10 +4,25 @@
 #include <OverlayClient.h>
 #include <filesystem>
 #include <functional>
+#include <spdlog/spdlog.h>
+#include <string>
+
+#include <include/internal/cef_types.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 namespace CEFUtils {
+namespace {
+bool IsSecureEnoughForAutoMic(const std::string& url)
+{
+  return url.rfind("https://", 0) == 0 ||
+    url.rfind("http://localhost", 0) == 0 ||
+    url.rfind("http://127.0.0.1", 0) == 0;
+}
+}
+
+std::atomic_bool OverlayClient::s_secureOriginAudioCaptureEnabled = false;
+
 OverlayClient::OverlayClient(
   MyRenderHandler* apHandler,
   std::shared_ptr<ProcessMessageListener> onProcessMessage_) noexcept
@@ -50,6 +65,21 @@ CefRefPtr<CefLifeSpanHandler> OverlayClient::GetLifeSpanHandler()
 CefRefPtr<CefContextMenuHandler> OverlayClient::GetContextMenuHandler()
 {
   return m_pContextMenuHandler;
+}
+
+CefRefPtr<CefPermissionHandler> OverlayClient::GetPermissionHandler()
+{
+  return this;
+}
+
+void OverlayClient::SetSecureOriginAudioCaptureEnabled(bool enabled) noexcept
+{
+  s_secureOriginAudioCaptureEnabled.store(enabled, std::memory_order_relaxed);
+}
+
+bool OverlayClient::IsSecureOriginAudioCaptureEnabled() noexcept
+{
+  return s_secureOriginAudioCaptureEnabled.load(std::memory_order_relaxed);
 }
 
 void OverlayClient::SetBrowser(const CefRefPtr<CefBrowser>& aBrowser) noexcept
@@ -118,6 +148,41 @@ bool OverlayClient::OnProcessMessageReceived(
   }
 
   return false;
+}
+
+bool OverlayClient::OnRequestMediaAccessPermission(
+  CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+  const CefString& requesting_origin, uint32 requested_permissions,
+  CefRefPtr<CefMediaAccessCallback> callback)
+{
+  const auto origin = requesting_origin.ToString();
+  const auto currentUrl =
+    frame ? frame->GetURL().ToString()
+          : browser ? browser->GetMainFrame()->GetURL().ToString() : "";
+  const auto secureUrlToCheck = !origin.empty() ? origin : currentUrl;
+
+  const bool wantsAudio =
+    (requested_permissions & CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE) != 0;
+  const bool wantsOtherCapture =
+    (requested_permissions & ~CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE) != 0;
+  const bool secureOriginAudioCaptureEnabled =
+    IsSecureOriginAudioCaptureEnabled();
+  const bool allowAudioCapture = secureOriginAudioCaptureEnabled && wantsAudio &&
+    !wantsOtherCapture && IsSecureEnoughForAutoMic(secureUrlToCheck);
+
+  spdlog::info(
+    "browser (tilted): media permission request origin='{}' url='{}' perms={} "
+    "secureOriginAudioCaptureEnabled={} allowAudioCapture={}",
+    origin, currentUrl, requested_permissions,
+    secureOriginAudioCaptureEnabled, allowAudioCapture);
+
+  if (allowAudioCapture) {
+    callback->Continue(CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE);
+  } else {
+    callback->Cancel();
+  }
+
+  return true;
 }
 
 bool OverlayClient::IsReady() const
