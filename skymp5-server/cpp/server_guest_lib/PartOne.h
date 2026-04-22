@@ -80,6 +80,7 @@ public:
   void SendCustomPacket(Networking::UserId userId,
                         const std::string& jContent);
   std::string GetActorName(uint32_t actorFormId);
+  float GetActorAngleZ(uint32_t actorFormId);
   NiPoint3 GetActorPos(uint32_t actorFormId);
   uint32_t GetActorCellOrWorld(uint32_t actorFormId);
   const std::set<uint32_t>& GetActorsByProfileId(ProfileId profileId);

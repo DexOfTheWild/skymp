@@ -61,6 +61,14 @@ const createServerPluginApi = (
 ): ServerPluginApi => {
   return {
     error: (...args: unknown[]) => log(`[plugin:${pluginId}]`, ...args),
+    getActorAngleZ: (actorId: number): number | null => {
+      try {
+        const angleZ = ctx.svr.getActorAngleZ(actorId);
+        return typeof angleZ === "number" && Number.isFinite(angleZ) ? angleZ : null;
+      } catch (_error) {
+        return null;
+      }
+    },
     getActorCellOrWorld: (actorId: number): number | null => {
       try {
         const worldOrCell = ctx.svr.getActorCellOrWorld(actorId);

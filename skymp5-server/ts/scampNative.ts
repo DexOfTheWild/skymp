@@ -34,6 +34,7 @@ export interface ScampServer {
   getUserGuid(userId: number): string;
   isConnected(userId: number): boolean;
   getActorName(actorId: number): string;
+  getActorAngleZ(actorId: number): number;
   getActorPos(actorId: number): number[];
   getActorCellOrWorld(actorId: number): number;
   setRaceMenuOpen(formId: number, open: boolean): void;

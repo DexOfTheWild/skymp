@@ -90,6 +90,7 @@ Napi::Object ScampServer::Init(Napi::Env env, Napi::Object exports)
       InstanceMethod("getUserActor", &ScampServer::GetUserActor),
       InstanceMethod("getUserGuid", &ScampServer::GetUserGuid),
       InstanceMethod("isConnected", &ScampServer::IsConnected),
+      InstanceMethod("getActorAngleZ", &ScampServer::GetActorAngleZ),
       InstanceMethod("getActorPos", &ScampServer::GetActorPos),
       InstanceMethod("getActorCellOrWorld", &ScampServer::GetActorCellOrWorld),
       InstanceMethod("getActorName", &ScampServer::GetActorName),
@@ -600,6 +601,17 @@ Napi::Value ScampServer::GetActorPos(const Napi::CallbackInfo& info)
     for (uint32_t i = 0; i < 3; ++i)
       res.Set(i, Napi::Number::New(info.Env(), pos[i]));
     return res;
+  } catch (std::exception& e) {
+    throw Napi::Error::New(info.Env(), (std::string)e.what());
+  }
+  return info.Env().Undefined();
+}
+
+Napi::Value ScampServer::GetActorAngleZ(const Napi::CallbackInfo& info)
+{
+  auto actorId = info[0].As<Napi::Number>().Uint32Value();
+  try {
+    return Napi::Number::New(info.Env(), partOne->GetActorAngleZ(actorId));
   } catch (std::exception& e) {
     throw Napi::Error::New(info.Env(), (std::string)e.what());
   }

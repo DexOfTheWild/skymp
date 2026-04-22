@@ -13,6 +13,7 @@ import {
   activateClientPluginHostGlobal,
   ClientPluginApi,
   ClientPluginBrowserApi,
+  ClientPluginBrowserMediaPermissionPolicy,
   ClientPluginBrowserMessageHandler,
   ClientPluginCustomPacketHandler,
   ClientPluginInit,
@@ -32,6 +33,7 @@ type BrowserApiWithEmitEvent = Sp["browser"] & {
   getBackend?: () => {
     name?: string;
   };
+  setMediaPermissionPolicy?: (policy: string) => void;
 };
 
 const dispatchBrowserEventFallback = ({
@@ -114,6 +116,17 @@ export class ClientPluginHostService extends ClientListener {
       isFocused: () => this.sp.browser.isFocused(),
       isVisible: () => this.sp.browser.isVisible(),
       loadUrl: (url: string) => this.sp.browser.loadUrl(url),
+      setMediaPermissionPolicy: (
+        policy: ClientPluginBrowserMediaPermissionPolicy,
+      ) => {
+        const browserApi = this.sp.browser as BrowserApiWithEmitEvent;
+        if (typeof browserApi.setMediaPermissionPolicy === "function") {
+          browserApi.setMediaPermissionPolicy(policy);
+          return;
+        }
+
+        logError(this, `Browser backend does not expose setMediaPermissionPolicy('${policy}')`);
+      },
       setFocused: (focused: boolean) => this.sp.browser.setFocused(focused),
       setVisible: (visible: boolean) => this.sp.browser.setVisible(visible),
     };

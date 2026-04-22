@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "allowJs": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "../build/dist/voip",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "src/types/*"],
+      "@skyrim-platform/skyrim-platform": ["../skymp5-client/node_modules/@skyrim-platform/skyrim-platform"],
+      "skyrimPlatform": ["../skymp5-client/node_modules/@skyrim-platform/skyrim-platform"]
+    },
+    "skipLibCheck": true
+  },
+  "include": [
+    "client",
+    "server",
+    "ts",
+    "tests",
+    "ui/src",
+    "shared",
+    "../skymp5-plugin-api"
+  ]
+}

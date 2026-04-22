@@ -1,0 +1,30 @@
+const esbuild = require("esbuild");
+const fs = require("fs");
+const path = require("path");
+
+const rootDir = path.resolve(__dirname, "..");
+const tempDir = path.join(rootDir, ".tmp-tests");
+const outFile = path.join(tempDir, "voipProximityEngine.test.cjs");
+
+fs.mkdirSync(tempDir, { recursive: true });
+
+try {
+  esbuild.buildSync({
+    bundle: true,
+    entryPoints: [path.join(rootDir, "tests", "voipProximityEngine.test.ts")],
+    format: "cjs",
+    outfile: outFile,
+    platform: "node",
+    sourcemap: "inline",
+    target: ["node20"],
+  });
+
+  require(outFile);
+  console.log("Phase 3 VOIP tests passed");
+} finally {
+  try {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  } catch (_error) {
+    // Ignore temp cleanup errors.
+  }
+}

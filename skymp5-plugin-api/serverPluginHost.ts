@@ -2,6 +2,7 @@ export type ServerPluginContent = Record<string, any>;
 
 export type ServerPluginApi = {
   error: (...args: unknown[]) => void;
+  getActorAngleZ: (actorId: number) => number | null;
   getActorCellOrWorld: (actorId: number) => number | null;
   getActorPos: (actorId: number) => number[] | null;
   getConfig: <T = unknown>() => T | undefined;
@@ -34,4 +35,4 @@ export type ServerPluginModule = {
   pluginId?: string;
 };
 
-export const SKYMP_SERVER_PLUGIN_API_VERSION = 1 as const;
+export const SKYMP_SERVER_PLUGIN_API_VERSION = 2 as const;

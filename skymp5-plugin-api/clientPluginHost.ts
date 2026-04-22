@@ -1,5 +1,9 @@
 export const SKYMP_CLIENT_PLUGIN_HOST_NAME = "__skympClientPluginHost" as const;
-export const SKYMP_CLIENT_PLUGIN_HOST_VERSION = 2 as const;
+export const SKYMP_CLIENT_PLUGIN_HOST_VERSION = 3 as const;
+
+export type ClientPluginBrowserMediaPermissionPolicy =
+  | "default"
+  | "secureOriginAudioCapture";
 
 export type ClientPluginBrowserApi = {
   emitEvent: (eventName: string, dataJson: string) => void;
@@ -7,6 +11,7 @@ export type ClientPluginBrowserApi = {
   isFocused: () => boolean;
   isVisible: () => boolean;
   loadUrl: (url: string) => void;
+  setMediaPermissionPolicy: (policy: ClientPluginBrowserMediaPermissionPolicy) => void;
   setFocused: (focused: boolean) => void;
   setVisible: (visible: boolean) => void;
 };
