@@ -88,7 +88,10 @@ option(BUILD_UNIT_TESTS "Build unit tests (excluded from build when off - workar
 option(INSTALL_CLIENT_DIST "Install the client into SKYRIM_DIR after build" OFF)
 option(BUILD_GAMEMODE "Build gamemode" OFF)
 option(BUILD_CLIENT "Build client" ON)
-option(BUILD_FRONT "Build front" OFF)
+option(BUILD_FRONT "Build front from local sources" ON)
+set(_default_build_nirnlab_runtime OFF)
+option(BUILD_NIRNLAB_RUNTIME "Build pinned NirnLab UI runtime into dist/client" ${_default_build_nirnlab_runtime})
+unset(_default_build_nirnlab_runtime)
 option(BUILD_SKYRIM_PLATFORM "Build Skyrim Platform" ON)
 option(BUILD_SCRIPTS "Build skymp5-scripts and Papyrus scripts in skyrim-platform" ON)
 option(OFFLINE_MODE "Enable offline mode in generated server settings and client settings" ON)
@@ -99,6 +102,7 @@ message(STATUS BUILD_UNIT_TESTS=${BUILD_UNIT_TESTS})
 message(STATUS INSTALL_CLIENT_DIST=${INSTALL_CLIENT_DIST})
 message(STATUS BUILD_GAMEMODE=${BUILD_GAMEMODE})
 message(STATUS BUILD_CLIENT=${BUILD_CLIENT})
+message(STATUS BUILD_NIRNLAB_RUNTIME=${BUILD_NIRNLAB_RUNTIME})
 message(STATUS BUILD_SCRIPTS=${BUILD_SCRIPTS})
 message(STATUS BUILD_FRONT=${BUILD_FRONT})
 message(STATUS BUILD_SKYRIM_PLATFORM=${BUILD_SKYRIM_PLATFORM})
@@ -223,6 +227,9 @@ if(PREPARE_NEXUS_ARCHIVES)
       add_dependencies(prepare_nexus_archives ${target})
     endif()
   endforeach()
+  if(TARGET nirnlab-runtime)
+    add_dependencies(prepare_nexus_archives nirnlab-runtime)
+  endif()
 endif()
 
 # One or more of these targets help dev_service not to crash during build (watch mode). Not sure which target exactly.
@@ -243,9 +250,15 @@ if(INSTALL_CLIENT_DIST)
   add_custom_target(
     install_client_dist ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/dist/client ${SKYRIM_DIR}
+    COMMAND ${CMAKE_COMMAND} -E rm -f
+      "${SKYRIM_DIR}/Data/SKSE/Plugins/NirnLabUIPlatformTest.dll"
+      "${SKYRIM_DIR}/Data/SKSE/Plugins/NirnLabUIPlatformTest.pdb"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   )
-  add_dependencies(install_client_dist skymp5-client skyrim-platform)
+  add_dependencies(install_client_dist skymp5-client skymp5-front skyrim-platform)
+  if(TARGET nirnlab-runtime)
+    add_dependencies(install_client_dist nirnlab-runtime)
+  endif()
 endif()
 
 # Integration tests from misc/tests
