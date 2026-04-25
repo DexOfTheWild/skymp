@@ -5,6 +5,7 @@ import { QueryKeyCodeBindings } from "../events/queryKeyCodeBindings";
 
 import { ClientListener, CombinedController, Sp } from "./clientListener";
 import { BrowserMessageEvent, DxScanCode, Menu, MenuCloseEvent, MenuOpenEvent } from "skyrimPlatform";
+import { isClientPluginBrowserVisibilitySuppressed } from "../../../../skymp5-plugin-api/clientPluginBrowserVisibility";
 
 const unfocusEventString = `window.dispatchEvent(new CustomEvent('skymp5-client:browserUnfocused', {}))`;
 const focusEventString = `window.dispatchEvent(new CustomEvent('skymp5-client:browserFocused', {}))`;
@@ -28,11 +29,13 @@ export class BrowserService extends ClientListener {
       FormView.isDisplayingNicknames = !FormView.isDisplayingNicknames;
     }
     if (e.isDown([DxScanCode.F2])) {
-      this.sp.browser.setVisible(!this.sp.browser.isVisible());
+      this.setBrowserVisible(!this.sp.browser.isVisible());
     }
     if (this.badMenusOpen.size === 0 && e.isDown([DxScanCode.F6])) {
       const newState = !this.sp.browser.isFocused();
-      this.sp.browser.setFocused(newState);
+      if (!this.setBrowserFocused(newState)) {
+        return;
+      }
       if (newState) {
         this.sp.browser.executeJavaScript(focusEventString);
       } else {
@@ -40,19 +43,21 @@ export class BrowserService extends ClientListener {
       }
     }
     if (this.badMenusOpen.size === 0 && e.isDown([DxScanCode.Enter])) {
-      this.sp.browser.setFocused(true);
+      if (!this.setBrowserFocused(true)) {
+        return;
+      }
       this.sp.browser.executeJavaScript(focusEventString);
     }
     if (e.isDown([DxScanCode.Escape])) {
       if (this.sp.browser.isFocused()) {
-        this.sp.browser.setFocused(false);
+        this.setBrowserFocused(false);
         this.sp.browser.executeJavaScript(unfocusEventString);
       }
     }
   }
 
   private onceUpdate() {
-    this.sp.browser.setVisible(true);
+    this.setBrowserVisible(true);
   }
 
   private onBrowserMessage(e: BrowserMessageEvent) {
@@ -65,23 +70,43 @@ export class BrowserService extends ClientListener {
 
   private onMenuOpen(e: MenuOpenEvent) {
     if (this.isBadMenu(e.name)) {
-      this.sp.browser.setVisible(false);
+      this.setBrowserVisible(false);
       this.badMenusOpen.add(e.name);
     } else if (e.name === Menu.HUD) {
-      this.sp.browser.setVisible(true);
+      this.setBrowserVisible(true);
     }
   }
 
   private onMenuClose(e: MenuCloseEvent) {
     if (this.badMenusOpen.delete(e.name)) {
       if (this.badMenusOpen.size === 0) {
-        this.sp.browser.setVisible(true);
+        this.setBrowserVisible(true);
       }
     }
 
     if (e.name === Menu.HUD) {
-      this.sp.browser.setVisible(false);
+      this.setBrowserVisible(false);
     }
+  }
+
+  private setBrowserFocused(focused: boolean): boolean {
+    if (focused && isClientPluginBrowserVisibilitySuppressed()) {
+      this.sp.browser.setFocused(false);
+      return false;
+    }
+
+    this.sp.browser.setFocused(focused);
+    return true;
+  }
+
+  private setBrowserVisible(visible: boolean): boolean {
+    if (visible && isClientPluginBrowserVisibilitySuppressed()) {
+      this.sp.browser.setVisible(false);
+      return false;
+    }
+
+    this.sp.browser.setVisible(visible);
+    return true;
   }
 
   private isBadMenu(menu: string) {

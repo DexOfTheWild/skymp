@@ -1,0 +1,12 @@
+{
+  "name": "skymp5-example-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node ../skymp5-server/node_modules/typescript/bin/tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.2.2"
+  }
+}

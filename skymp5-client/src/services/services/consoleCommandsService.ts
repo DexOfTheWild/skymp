@@ -5,6 +5,7 @@ import { MsgType } from "../../messages";
 import { localIdToRemoteId } from "../../view/worldViewMisc";
 
 import { ClientListener, Sp, CombinedController } from "./clientListener";
+import { getClientPluginConsoleCommand } from "./clientPluginConsoleCommandRegistry";
 
 enum CmdArgument {
     ObjectReference,
@@ -71,20 +72,28 @@ export class ConsoleCommandsService extends ClientListener {
                 return false;
             }
 
-            if (args.length !== schema.length && !this.immuneSchema.includes(commandName)) {
+            const normalizedArgs = commandName === "mp"
+                ? this.normalizeMpArgs(args)
+                : [...args];
+
+            if (commandName === "mp" && this.tryHandlePluginMpCommand(normalizedArgs)) {
+                return false;
+            }
+
+            if (normalizedArgs.length !== schema.length && !this.immuneSchema.includes(commandName)) {
                 logError(this, `Mismatch found in the schema of`, commandName, `command`);
                 return false;
             }
-            for (let i = 0; i < args.length; ++i) {
+            for (let i = 0; i < normalizedArgs.length; ++i) {
                 switch (schema[i]) {
                     case CmdArgument.ObjectReference:
-                        args[i] = localIdToRemoteId(parseInt(`${args[i]}`));
+                        normalizedArgs[i] = localIdToRemoteId(parseInt(`${normalizedArgs[i]}`));
                         break;
                 }
             }
 
-            for (let i = 0; i < args.length; ++i) {
-                if (typeof args[i] !== "string" && typeof args[i] !== "number") {
+            for (let i = 0; i < normalizedArgs.length; ++i) {
+                if (typeof normalizedArgs[i] !== "string" && typeof normalizedArgs[i] !== "number") {
                     logError(this, `Bad argument type in command`, commandName, `argument index`, i);
                     return false;
                 }
@@ -95,7 +104,7 @@ export class ConsoleCommandsService extends ClientListener {
                     t: MsgType.ConsoleCommand,
                     data: {
                         commandName,
-                        args: args as (string | number)[]
+                        args: normalizedArgs as (string | number)[]
                     }
                 },
                 reliability: "reliable"
@@ -105,6 +114,55 @@ export class ConsoleCommandsService extends ClientListener {
             this.sp.printConsole("sent");
             return false;
         };
+    }
+
+    private tryHandlePluginMpCommand(args: unknown[]): boolean {
+        const tokens = args
+            .map((arg) => `${arg}`.trim())
+            .flatMap((arg) => arg.split(/\s+/))
+            .filter((token) => token.length > 0);
+        if (tokens.length < 2) {
+            return false;
+        }
+
+        const commandName = tokens[1].toLowerCase();
+        const registration = getClientPluginConsoleCommand(commandName);
+        if (!registration) {
+            return false;
+        }
+
+        try {
+            const handled = registration.handler(tokens.slice(2), {
+                commandName,
+                pluginId: registration.pluginId,
+                printConsole: (...printArgs: unknown[]) => this.sp.printConsole(...printArgs),
+                rawArgs: args,
+                tokens,
+            });
+            return handled !== false;
+        } catch (error) {
+            logError(
+                this,
+                `Client plugin console command '${commandName}' failed for plugin '${registration.pluginId}'`,
+                error,
+            );
+            this.sp.printConsole(`[mp ${commandName}] failed; see logs`);
+            return true;
+        }
+    }
+
+    private normalizeMpArgs(args: unknown[]): unknown[] {
+        if (args.length === 0) {
+            return [0x14];
+        }
+
+        const [firstArg] = args;
+        const normalizedFirstArg = `${firstArg}`.trim();
+        if (normalizedFirstArg !== "" && !Number.isNaN(parseInt(normalizedFirstArg, 10))) {
+            return [...args];
+        }
+
+        return [0x14, ...args];
     }
 
     private readonly schemas: Map<CmdName, CmdArgument[]>;

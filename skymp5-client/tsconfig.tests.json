@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist-tests",
+    "types": ["node"]
+  },
+  "include": [
+    "tests/**/*.ts",
+    "src/services/services/clientPluginHostRuntime.ts",
+    "src/services/services/clientPluginConsoleCommandRegistry.ts",
+    "../skymp5-plugin-api/**/*.ts"
+  ]
+}

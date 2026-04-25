@@ -32,6 +32,7 @@ import * as os from "os";
 import * as manifestGen from "./manifestGen";
 import { createScampServer } from "./scampNative";
 import { MetricsSystem, tickDurationHistogram, tickDurationSummary } from "./systems/metricsSystem";
+import { loadServerPluginSystems } from "./plugins/serverPluginLoader";
 
 const gamemodeCache = new Map<string, string>();
 
@@ -215,6 +216,43 @@ const main = async () => {
     process.exit(-1);
   }
   const ctx = { svr: server, gm: new EventEmitter() };
+  let systemsDisposed = false;
+  const disposeSystems = async (): Promise<void> => {
+    if (systemsDisposed) {
+      return;
+    }
+
+    systemsDisposed = true;
+    for (const system of [...systems].reverse()) {
+      if (!system.disposeAsync) {
+        continue;
+      }
+
+      try {
+        await system.disposeAsync(ctx);
+      } catch (error) {
+        console.error(`Failed to dispose ${system.systemName}`, error);
+      }
+    }
+  };
+
+  const pluginSystems = await loadServerPluginSystems({
+    ctx,
+    log,
+    settings: settingsObject.allSettings,
+  });
+  systems.push(...pluginSystems);
+
+  const registerShutdownHandler = (signal: NodeJS.Signals) => {
+    process.on(signal, () => {
+      void (async () => {
+        await disposeSystems();
+        process.exit(0);
+      })();
+    });
+  };
+  registerShutdownHandler("SIGINT");
+  registerShutdownHandler("SIGTERM");
 
   console.log(`Current process ID is ${pid}`);
 
@@ -302,6 +340,7 @@ const main = async () => {
   try {
     server.attachSaveStorage();
   } catch (e) {
+    await disposeSystems();
     console.error(e);
     console.error(`Stopping the server due to the previous error`);
     process.exit(-1);
