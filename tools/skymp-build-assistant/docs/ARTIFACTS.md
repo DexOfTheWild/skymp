@@ -22,6 +22,15 @@ Webpack config: [skymp5-client/webpack.config.js](../../skymp5-client/webpack.co
 | Artifact | Producer | Output path |
 |----------|----------|-------------|
 | UI bundle(s) | Optional `BUILD_FRONT` -> `yarn build` (webpack) | `build/dist/client/Data/Platform/UI` (via [skymp5-front/config.js](../../skymp5-front/config.js)) |
+| Platform distribution files | Skyrim Platform pack step | `build/dist/client/Data/Platform/Distribution` |
+| Platform fonts | front/platform packaging | `build/dist/client/Data/Platform/Fonts` |
+| Platform modules | Skyrim Platform packaging | `build/dist/client/Data/Platform/Modules` |
+
+## Scripts
+
+| Artifact | Producer | Output path |
+|----------|----------|-------------|
+| Papyrus scripts | Skyrim Platform / client packaging | `build/dist/client/Data/Scripts` |
 
 ## Server (Node)
 
@@ -58,15 +67,18 @@ Notes:
 
 ## Skyrim Platform native binaries
 
-Built under CMake (Skyrim Platform); typical outputs referenced by [sync-dev-runtime.ps1](../../sync-dev-runtime.ps1):
+Built under CMake (Skyrim Platform). The `skyrim-platform` pack step writes the portable client layout into `build/dist/client`, and sync/install tooling should treat that dist tree as the source of truth for runtime files.
 
 | Artifact | Output (dist mirror) | Game destination |
 |----------|----------------------|------------------|
+| `MpClientPlugin.dll` | `build/dist/client/Data/SKSE/Plugins/MpClientPlugin.dll` | `<SSE>/Data/SKSE/Plugins/MpClientPlugin.dll` |
 | `SkyrimPlatform.dll` | `build/dist/client/Data/SKSE/Plugins/SkyrimPlatform.dll` | `<SSE>/Data/SKSE/Plugins/SkyrimPlatform.dll` |
-| `SkyrimPlatformImpl.dll` | `build/dist/client/Data/Platform/Distribution/RuntimeDependencies/...` | `<SSE>/Data/Platform/Distribution/RuntimeDependencies/...` |
-| `SkyrimPlatformCEF.exe.hidden` | same pattern | same pattern |
+| `SkyrimPlatform.ini` | `build/dist/client/Data/SKSE/Plugins/SkyrimPlatform.ini` | `<SSE>/Data/SKSE/Plugins/SkyrimPlatform.ini` |
+| Runtime dependency directory | `build/dist/client/Data/Platform/Distribution/RuntimeDependencies/` | `<SSE>/Data/Platform/Distribution/RuntimeDependencies/` |
 
-Build bin dir (source for sync): `build/skyrim-platform/_platform_se/bin/Release/` (or Debug).
+Typical runtime contents include `SkyrimPlatformImpl.dll`, `SkyrimPlatformCEF.exe.hidden`, `libcef.dll`, `libnode.dll`, `icudtl.dat`, `snapshot_blob.bin`, and related CEF/V8 DLLs.
+
+Build bin dir for the native outputs is `build/skyrim-platform/_platform_se/bin/Release/` (or Debug), but the runtime directory copied into the game should come from `build/dist/client`, not a hand-curated subset of native binaries.
 
 ## NirnLab (optional sibling / in-repo checkout)
 
