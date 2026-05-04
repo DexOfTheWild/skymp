@@ -1,5 +1,6 @@
 
 // TODO: send event instead of direct dependency on FormView class
+import { isClientAddonBrowserVisibilitySuppressed } from "../../../../skymp5-addons-api/clientAddonBrowserVisibility";
 import { FormView } from "../../view/formView";
 import { QueryKeyCodeBindings } from "../events/queryKeyCodeBindings";
 
@@ -80,8 +81,23 @@ export class BrowserService extends ClientListener {
     }
 
     if (e.name === Menu.HUD) {
-      this.sp.browser.setVisible(false);
+      this.setBrowserVisible(false);
     }
+  }
+
+  private setBrowserFocused(focused: boolean): boolean {
+    if (focused && isClientAddonBrowserVisibilitySuppressed()) {
+      this.sp.browser.setFocused(false);
+      return false;
+    }
+
+    this.sp.browser.setFocused(focused);
+    return true;
+  }
+
+  private setBrowserVisible(visible: boolean): boolean {
+    this.sp.browser.setVisible(visible);
+    return true;
   }
 
   private isBadMenu(menu: string) {

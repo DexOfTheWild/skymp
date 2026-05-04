@@ -16,6 +16,7 @@ import { NetworkingService } from "./networkingService";
 import { MsgType } from "../../messages";
 import { ConnectionDenied } from "../events/connectionDenied";
 import { SettingsService } from "./settingsService";
+import { ClientAddonHostService } from "./clientAddonHostService";
 
 // for browsersideWidgetSetter
 declare const window: any;
@@ -124,6 +125,10 @@ export class AuthService extends ClientListener {
   }
 
   private onAuthNeeded(e: AuthNeededEvent) {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     logTrace(this, `Received authNeeded event`);
 
     const settingsGameData = this.sp.settings["skymp5-client"]["gameData"] as any;
@@ -143,6 +148,10 @@ export class AuthService extends ClientListener {
   }
 
   private onBrowserWindowLoaded(e: BrowserWindowLoadedEvent) {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     logTrace(this, `Received browserWindowLoaded event`);
 
     this.trigger.browserWindowLoadedFired = true;
@@ -152,6 +161,10 @@ export class AuthService extends ClientListener {
   }
 
   private onCreateActorMessage(e: ConnectionMessage<CreateActorMessage>) {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     if (e.message.isMe) {
       if (this.authDialogOpen) {
         logTrace(this, `Received createActorMessage for self, resetting widgets`);
@@ -167,6 +180,10 @@ export class AuthService extends ClientListener {
   }
 
   private onCustomPacketMessage(event: ConnectionMessage<CustomPacketMessage>): void {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     const msg = event.message;
 
     let msgContent: Record<string, unknown> = {};
@@ -256,6 +273,10 @@ export class AuthService extends ClientListener {
   }
 
   private onBrowserMessage(e: BrowserMessageEvent) {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     if (!this.isListenBrowserMessage) {
       logTrace(this, `onBrowserMessage: isListenBrowserMessage was false, ignoring message`, JSON.stringify(e.arguments));
       return;
@@ -586,6 +607,10 @@ export class AuthService extends ClientListener {
   };
 
   private handleConnectionDenied(e: ConnectionDenied) {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     this.authAttemptProgressIndicator = false;
 
     if (e.error.toLowerCase().includes("invalid password")) {
@@ -603,6 +628,10 @@ export class AuthService extends ClientListener {
   }
 
   private handleConnectionAccepted() {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     this.setListenBrowserMessage(false, 'connectionAccepted event received');
     this.loggingStartMoment = Date.now();
 
@@ -649,6 +678,10 @@ export class AuthService extends ClientListener {
   };
 
   private onTick() {
+    if (this.shouldDeferToAddonAuth()) {
+      return;
+    }
+
     // TODO: Should be no hardcoded/magic-number limit
     // TODO: Busy waiting is bad. Should be replaced with some kind of event
     const maxLoggingDelay = 15000;
@@ -692,6 +725,14 @@ export class AuthService extends ClientListener {
 
   private onceUpdate() {
     this.playerEverSawActualGameplay = true;
+  }
+
+  private shouldDeferToAddonAuth(): boolean {
+    try {
+      return this.controller.lookupListener(ClientAddonHostService).hasAuthProvider();
+    } catch {
+      return false;
+    }
   }
 
   private isListenBrowserMessage() {
