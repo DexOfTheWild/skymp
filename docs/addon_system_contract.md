@@ -237,6 +237,8 @@ shape:
 7. Document any runtime assumptions that are not covered by the public host API.
 8. If the addon should participate in `skymp-dev` build/sync flows, add
    `skymp-addon.json` in the addon root and declare its build outputs there.
+   Command-built addons can also declare a pre-build install step there, such
+   as `build.installCommand`.
 
 ## Not Yet Formalized
 

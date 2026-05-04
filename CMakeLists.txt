@@ -90,6 +90,8 @@ option(BUILD_GAMEMODE "Build gamemode" ON)
 option(BUILD_GAMEMODE_FROM_REMOTE "Build gamemode from remote skymp5-gamemode repository instead of local skymp5-gamemode sources" OFF)
 option(BUILD_CLIENT "Build client" ON)
 option(BUILD_FRONT "Build front from local sources" ON)
+option(BUILD_NIRNLAB_RUNTIME "Build pinned NirnLab UI runtime into dist/client" ON)
+
 option(BUILD_SKYRIM_PLATFORM "Build Skyrim Platform" ON)
 option(BUILD_SCRIPTS "Build skymp5-scripts and Papyrus scripts in skyrim-platform" ON)
 option(OFFLINE_MODE "Enable offline mode in generated server settings and client settings" ON)
@@ -101,6 +103,7 @@ message(STATUS INSTALL_CLIENT_DIST=${INSTALL_CLIENT_DIST})
 message(STATUS BUILD_GAMEMODE=${BUILD_GAMEMODE})
 message(STATUS BUILD_GAMEMODE_FROM_REMOTE=${BUILD_GAMEMODE_FROM_REMOTE})
 message(STATUS BUILD_CLIENT=${BUILD_CLIENT})
+message(STATUS BUILD_NIRNLAB_RUNTIME=${BUILD_NIRNLAB_RUNTIME})
 message(STATUS BUILD_SCRIPTS=${BUILD_SCRIPTS})
 message(STATUS BUILD_FRONT=${BUILD_FRONT})
 message(STATUS BUILD_SKYRIM_PLATFORM=${BUILD_SKYRIM_PLATFORM})
@@ -214,7 +217,6 @@ if(PREPARE_NEXUS_ARCHIVES)
 
   add_dependencies(prepare_nexus_archives skyrim-platform papyrus-vm)
   set(TARGETS_ADDITIONAL
-    skymp5-addons
     skymp5-client
     skymp5-front
     skymp5-functions-lib
@@ -226,11 +228,13 @@ if(PREPARE_NEXUS_ARCHIVES)
       add_dependencies(prepare_nexus_archives ${target})
     endif()
   endforeach()
+  if(TARGET nirnlab-runtime)
+    add_dependencies(prepare_nexus_archives nirnlab-runtime)
+  endif()
 endif()
 
 # One or more of these targets help dev_service not to crash during build (watch mode). Not sure which target exactly.
 set(TARGETS_ADDITIONAL
-    skymp5-addons
     skymp5-client
     skymp5-front
     skymp5-functions-lib
@@ -247,9 +251,15 @@ if(INSTALL_CLIENT_DIST)
   add_custom_target(
     install_client_dist ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/dist/client ${SKYRIM_DIR}
+    COMMAND ${CMAKE_COMMAND} -E rm -f
+      "${SKYRIM_DIR}/Data/SKSE/Plugins/NirnLabUIPlatformTest.dll"
+      "${SKYRIM_DIR}/Data/SKSE/Plugins/NirnLabUIPlatformTest.pdb"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   )
-  add_dependencies(install_client_dist skymp5-addons skymp5-client skyrim-platform)
+  add_dependencies(install_client_dist skymp5-client skymp5-front skyrim-platform)
+  if(TARGET nirnlab-runtime)
+    add_dependencies(install_client_dist nirnlab-runtime)
+  endif()
 endif()
 
 # Integration tests from misc/tests

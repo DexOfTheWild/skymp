@@ -1,0 +1,71 @@
+{
+  "$schema": "../../tools/skymp-build-assistant/schema/addon-manifest.schema.json",
+  "version": 1,
+  "addonId": "voip",
+  "label": "VoIP",
+  "build": {
+    "kind": "command",
+    "installCommand": "npm install",
+    "command": "npm run build",
+    "expectedOutputs": [
+      {
+        "path": "../build/dist/client/Data/Platform/Plugins/skymp5-voip.js",
+        "label": "VoIP client plugin"
+      },
+      {
+        "path": "../build/dist/client/Data/Platform/Plugins/skymp5-voip-settings.txt",
+        "label": "VoIP client settings"
+      },
+      {
+        "path": "../build/dist/voip/server/skymp5-voip-server-plugin.js",
+        "label": "VoIP server plugin"
+      },
+      {
+        "path": "../build/dist/voip/voip-dev-server.js",
+        "label": "VoIP dev server bundle"
+      },
+      {
+        "path": "../build/dist/voip/ui",
+        "label": "VoIP UI assets"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "client-plugin",
+      "label": "VoIP client plugin",
+      "producer": "skymp5-addons/skymp5-voip (npm build)",
+      "kind": "file",
+      "requiresSkyrim": true,
+      "optional": true,
+      "sources": [
+        {
+          "path": "../build/dist/client/Data/Platform/Plugins/skymp5-voip.js"
+        }
+      ],
+      "destinations": [
+        {
+          "path": "${skyrimPlatformDir}/Plugins/skymp5-voip.js"
+        }
+      ]
+    },
+    {
+      "id": "client-settings",
+      "label": "VoIP client settings",
+      "producer": "skymp5-addons/skymp5-voip (generated from .env)",
+      "kind": "file",
+      "requiresSkyrim": true,
+      "optional": true,
+      "sources": [
+        {
+          "path": "../build/dist/client/Data/Platform/Plugins/skymp5-voip-settings.txt"
+        }
+      ],
+      "destinations": [
+        {
+          "path": "${skyrimPlatformDir}/Plugins/skymp5-voip-settings.txt"
+        }
+      ]
+    }
+  ]
+}
