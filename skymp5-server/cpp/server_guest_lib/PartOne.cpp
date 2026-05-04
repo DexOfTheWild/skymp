@@ -293,6 +293,12 @@ std::string PartOne::GetActorName(uint32_t actorFormId)
   return ac.GetAppearance() ? ac.GetAppearance()->name : "Prisoner";
 }
 
+float PartOne::GetActorAngleZ(uint32_t actorFormId)
+{
+  auto& ac = worldState.GetFormAt<MpActor>(actorFormId);
+  return ac.GetAngle().z;
+}
+
 NiPoint3 PartOne::GetActorPos(uint32_t actorFormId)
 {
   auto& ac = worldState.GetFormAt<MpActor>(actorFormId);

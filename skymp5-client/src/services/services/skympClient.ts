@@ -14,6 +14,7 @@ import { CreateActorMessage } from '../messages/createActorMessage';
 import { AuthAttemptEvent } from '../events/authAttemptEvent';
 import { logTrace } from '../../logging';
 import { SettingsService, TargetPeer } from './settingsService';
+import { ClientAddonHostService } from './clientAddonHostService';
 
 printConsole('Hello Multiplayer!');
 printConsole('settings:', settings['skymp5-client']);
@@ -26,24 +27,7 @@ export class SkympClient extends ClientListener {
     this.controller.emitter.on("connectionDenied", (e) => this.onConnectionDenied(e));
 
     this.controller.emitter.on("createActorMessage", (e) => this.onActorCreateMessage(e));
-
-    // TODO: refactor out very similar code in frontHotReloadService.ts
-    const authGameData = storage[authGameDataStorageKey] as AuthGameData | undefined;
-
-    const storageHasValidAuthGameData = authGameData?.local || authGameData?.remote;
-
-    if (storageHasValidAuthGameData) {
-      logTrace(this, `Recovered AuthGameData from storage, starting client`);
-      this.startClient();
-    } else {
-      logTrace(this, `Unable to recover AuthGameData from storage, requesting auth`);
-
-      // Next tick because we're in constructor of the service, AuthService may not be listening events yet
-      this.controller.once("tick", () => {
-        this.controller.emitter.emit("authNeeded", {});
-      });
-      this.controller.emitter.on("authAttempt", (e) => this.onAuthAttempt(e));
-    }
+    this.controller.once("tick", () => this.bootstrapAuthFlow());
   }
 
   private onAuthAttempt(e: AuthAttemptEvent) {
@@ -69,6 +53,29 @@ export class SkympClient extends ClientListener {
 
   private onConnectionDenied(e: ConnectionDenied) {
     logTrace(this, "Connection denied: " + e.error);
+  }
+
+  private bootstrapAuthFlow() {
+    if (this.hasAddonAuthProvider()) {
+      logTrace(this, "Client plugin auth provider detected, delegating auth flow");
+      this.ensureAuthAttemptListener();
+      this.controller.emitter.emit("authNeeded", {});
+      return;
+    }
+
+    // TODO: refactor out very similar code in frontHotReloadService.ts
+    const authGameData = storage[authGameDataStorageKey] as AuthGameData | undefined;
+    const storageHasValidAuthGameData = authGameData?.local || authGameData?.remote;
+
+    if (storageHasValidAuthGameData) {
+      logTrace(this, `Recovered AuthGameData from storage, starting client`);
+      this.startClient();
+      return;
+    }
+
+    logTrace(this, `Unable to recover AuthGameData from storage, requesting auth`);
+    this.ensureAuthAttemptListener();
+    this.controller.emitter.emit("authNeeded", {});
   }
 
   private startClient() {
@@ -101,4 +108,23 @@ export class SkympClient extends ClientListener {
       },
     );
   }
+
+  private ensureAuthAttemptListener() {
+    if (this.isAuthAttemptListenerRegistered) {
+      return;
+    }
+
+    this.isAuthAttemptListenerRegistered = true;
+    this.controller.emitter.on("authAttempt", (e) => this.onAuthAttempt(e));
+  }
+
+  private hasAddonAuthProvider(): boolean {
+    try {
+      return this.controller.lookupListener(ClientAddonHostService).hasAuthProvider();
+    } catch {
+      return false;
+    }
+  }
+
+  private isAuthAttemptListenerRegistered = false;
 }

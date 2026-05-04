@@ -212,6 +212,7 @@ if(PREPARE_NEXUS_ARCHIVES)
 
   add_dependencies(prepare_nexus_archives skyrim-platform papyrus-vm)
   set(TARGETS_ADDITIONAL
+    skymp5-addons
     skymp5-client
     skymp5-front
     skymp5-functions-lib
@@ -227,6 +228,7 @@ endif()
 
 # One or more of these targets help dev_service not to crash during build (watch mode). Not sure which target exactly.
 set(TARGETS_ADDITIONAL
+    skymp5-addons
     skymp5-client
     skymp5-front
     skymp5-functions-lib
@@ -245,7 +247,7 @@ if(INSTALL_CLIENT_DIST)
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/dist/client ${SKYRIM_DIR}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   )
-  add_dependencies(install_client_dist skymp5-client skyrim-platform)
+  add_dependencies(install_client_dist skymp5-addons skymp5-client skyrim-platform)
 endif()
 
 # Integration tests from misc/tests
