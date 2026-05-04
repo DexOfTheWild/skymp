@@ -1,0 +1,36 @@
+{
+  "$schema": "../../tools/skymp-build-assistant/schema/addon-manifest.schema.json",
+  "version": 1,
+  "addonId": "auth-ui",
+  "label": "Auth UI",
+  "build": {
+    "kind": "cmake-target",
+    "target": "skymp5-addon-auth-ui",
+    "expectedOutputs": [
+      {
+        "path": "${buildDir}/dist/client/Data/Platform/Plugins/auth-ui.js",
+        "label": "Auth UI client plugin"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "client-plugin",
+      "label": "Auth UI client plugin",
+      "producer": "skymp5-addons/auth-ui (webpack via CMake)",
+      "kind": "file",
+      "requiresSkyrim": true,
+      "optional": true,
+      "sources": [
+        {
+          "path": "${buildDir}/dist/client/Data/Platform/Plugins/auth-ui.js"
+        }
+      ],
+      "destinations": [
+        {
+          "path": "${skyrimPlatformDir}/Plugins/auth-ui.js"
+        }
+      ]
+    }
+  ]
+}

@@ -352,6 +352,10 @@ function resolveAddonVisualStudioProjectName(state, addon) {
   return '';
 }
 
+function hasGeneratedAddonVisualStudioProject(state, addon) {
+  return Boolean(resolveAddonVisualStudioProjectName(state, addon));
+}
+
 function resolveAddonCmakeBuildTarget(state, addon) {
   const declaredTarget = addon.build?.target;
   if (!declaredTarget) {
@@ -881,6 +885,12 @@ function createAddonProfileDefinitions(state) {
               hasVisualStudioMsBuild(profileState),
               'Could not locate MSBuild.exe for the configured Visual Studio generator.',
             ),
+            createRequirement(
+              `addon-${sanitizeAddonKey(addon.addonId)}-generated-project`,
+              'Generated addon project',
+              hasGeneratedAddonVisualStudioProject(profileState, addon),
+              `The current build tree does not contain a generated Visual Studio project for ${addon.addonId}. Re-run CMake configure after ensuring skymp5-addons/cmakeproj.cmake is present.`,
+            ),
           );
         }
       }
@@ -1205,6 +1215,12 @@ const STATIC_PROFILE_DEFINITIONS = [
         'Visual Studio MSBuild',
         !isVisualStudioGenerator(state) || hasVisualStudioMsBuild(state),
         'Could not locate MSBuild.exe for the configured Visual Studio generator.',
+      ),
+      createRequirement(
+        'addon-generated-project',
+        'Generated aggregate addon project',
+        !isVisualStudioGenerator(state) || hasVisualStudioProject(state, 'skymp5-addons'),
+        'The current build tree does not contain build\\skymp5-addons\\skymp5-addons.vcxproj. Re-run CMake configure after ensuring skymp5-addons/cmakeproj.cmake is present.',
       ),
     ],
     steps: (state) => {
