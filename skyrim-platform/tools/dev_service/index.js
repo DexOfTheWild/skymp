@@ -173,6 +173,10 @@ const watchCallback = (_eventType, fileName) => {
           path.join(distDir, "Data/SKSE/Plugins")
         );
         cp(
+          path.join(__dirname, "SkyrimPlatform.ini"),
+          path.join(distDir, "Data/SKSE/Plugins")
+        );
+        cp(
           binPath("SkyrimPlatformImpl.dll"),
           path.join(distDir, "Data/Platform/Distribution/RuntimeDependencies")
         );
