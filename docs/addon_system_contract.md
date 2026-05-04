@@ -17,6 +17,31 @@ addon author would need to follow.
 Treat the `skymp5-addons-api` package as the stable surface first. Treat the
 host/loader implementation details as internal unless they are promoted here.
 
+## Build Assistant Manifest
+
+Build assistant integration is now manifest-driven per addon. If an addon wants
+`skymp-dev` to discover its build outputs or sync rules automatically, place
+`skymp-addon.json` in the addon root under `skymp5-addons/<addon>/`.
+
+That manifest is tooling metadata for local build/sync flows. It does not
+change the runtime registration rules described below.
+
+Current supported build assistant fields:
+
+- `addonId`
+- `label`
+- `build`
+  - `kind: "cmake-target"` with `target`
+  - `kind: "command"` with `command` and optional `workingDirectory`
+  - optional `includedInBuildAll`
+  - optional `expectedOutputs`
+- `artifacts`
+- `warnings`
+- `staleRemoval`
+
+Use `tools/skymp-build-assistant/schema/addon-manifest.schema.json` as the
+schema reference.
+
 ## Client Addon Contract
 
 Client addons currently self-register into a global host. An addon bundle calls
@@ -210,13 +235,15 @@ shape:
 6. Keep addon config under `addons.<addonId>` on the server and under
    an addon-owned client scope such as `sp.settings["skymp5-<addonId>"]`.
 7. Document any runtime assumptions that are not covered by the public host API.
+8. If the addon should participate in `skymp-dev` build/sync flows, add
+   `skymp-addon.json` in the addon root and declare its build outputs there.
 
 ## Not Yet Formalized
 
 The following are intentionally not promised as stable platform behavior yet:
 
 - addon load ordering guarantees
-- client addon auto-discovery conventions
+- client addon runtime auto-discovery conventions
 - generic client addon config schema
 - addon dependency ordering between addons
 - addon sandboxing or isolation guarantees
