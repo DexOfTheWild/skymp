@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skymp.io/schemas/skymp-addon-manifest.json",
+  "title": "SkyMP addon manifest",
+  "type": "object",
+  "required": ["version", "addonId"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "addonId": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "build": {
+      "$ref": "#/definitions/build"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/artifact" }
+    },
+    "staleRemoval": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/staleRemovalRule" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/warningRule" }
+    }
+  },
+  "definitions": {
+    "pathEntry": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "label": { "type": "string" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["id", "kind", "sources", "destinations"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["file", "directory"]
+        },
+        "requiresSkyrim": { "type": "boolean", "default": false },
+        "optional": { "type": "boolean", "default": false },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/pathEntry" }
+        },
+        "destinations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/pathEntry" }
+        },
+        "producer": { "type": "string" }
+      }
+    },
+    "build": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["cmake-target", "command"]
+        },
+        "target": { "type": "string" },
+        "command": { "type": "string" },
+        "installCommand": { "type": "string" },
+        "workingDirectory": { "type": "string" },
+        "includedInBuildAll": { "type": "boolean", "default": true },
+        "expectedOutputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/pathEntry" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "cmake-target" }
+            }
+          },
+          "then": {
+            "required": ["target"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "const": "command" }
+            }
+          },
+          "then": {
+            "required": ["command"]
+          }
+        }
+      ]
+    },
+    "staleRemovalRule": {
+      "type": "object",
+      "required": ["id", "sourceDirectory", "destinationDirectory", "relativePaths"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "sourceDirectory": { "type": "string" },
+        "destinationDirectory": { "type": "string" },
+        "relativePaths": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "warningRule": {
+      "type": "object",
+      "required": ["id", "path", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "path": { "type": "string" },
+        "message": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warn", "error"],
+          "default": "warn"
+        }
+      }
+    }
+  }
+}
