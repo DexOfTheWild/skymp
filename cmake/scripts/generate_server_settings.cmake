@@ -39,6 +39,21 @@ if(CURRENT_PLUGINS_ERROR)
     string(JSON SERVER_SETTINGS_JSON SET "${SERVER_SETTINGS_JSON}" "plugins" "{}")
 endif()
 
+string(JSON CURRENT_PLUGIN_MODULES ERROR_VARIABLE CURRENT_PLUGIN_MODULES_ERROR GET "${SERVER_SETTINGS_JSON}" "pluginModules")
+if(CURRENT_PLUGIN_MODULES_ERROR)
+    string(JSON SERVER_SETTINGS_JSON SET "${SERVER_SETTINGS_JSON}" "pluginModules" "{}")
+endif()
+
+string(JSON CURRENT_SERVER_PLUGIN_MODULES ERROR_VARIABLE CURRENT_SERVER_PLUGIN_MODULES_ERROR GET "${SERVER_SETTINGS_JSON}" "pluginModules" "server")
+if(CURRENT_SERVER_PLUGIN_MODULES_ERROR)
+    string(JSON SERVER_SETTINGS_JSON SET "${SERVER_SETTINGS_JSON}" "pluginModules" "server" "[\"../voip/server/skymp5-voip-server-plugin.js\"]")
+endif()
+
+string(JSON CURRENT_VOIP_PLUGIN_CONFIG ERROR_VARIABLE CURRENT_VOIP_PLUGIN_CONFIG_ERROR GET "${SERVER_SETTINGS_JSON}" "plugins" "voip")
+if(CURRENT_VOIP_PLUGIN_CONFIG_ERROR)
+    string(JSON SERVER_SETTINGS_JSON SET "${SERVER_SETTINGS_JSON}" "plugins" "voip" "{ \"audioStateUpdateIntervalMs\": 100, \"defaultProximityRadius\": 2000, \"distanceAttenuationEnabled\": true, \"modeRadii\": { \"whisper\": 800, \"say\": 2000, \"yell\": 3000 } }")
+endif()
+
 file(WRITE "${SERVER_SETTINGS_JSON_PATH}" "${SERVER_SETTINGS_JSON}")
 
 if(SERVER_SETTINGS_BASE_JSON_PATH)

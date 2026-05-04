@@ -100,11 +100,6 @@ export class BrowserService extends ClientListener {
   }
 
   private setBrowserVisible(visible: boolean): boolean {
-    if (visible && isClientPluginBrowserVisibilitySuppressed()) {
-      this.sp.browser.setVisible(false);
-      return false;
-    }
-
     this.sp.browser.setVisible(visible);
     return true;
   }
