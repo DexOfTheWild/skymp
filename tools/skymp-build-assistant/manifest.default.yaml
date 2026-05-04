@@ -49,6 +49,17 @@ artifacts:
     destinations:
       - path: "${skyrimPlatformDir}/Plugins/skymp5-voip.js"
 
+  - id: skymp5-voip-settings
+    label: VoIP plugin settings
+    producer: generate_client_settings.cmake
+    kind: file
+    requiresSkyrim: true
+    optional: true
+    sources:
+      - path: "${buildDir}/dist/client/Data/Platform/Plugins/skymp5-voip-settings.txt"
+    destinations:
+      - path: "${skyrimPlatformDir}/Plugins/skymp5-voip-settings.txt"
+
   - id: platform-ui
     label: Platform UI bundle directory
     producer: skymp5-front / voip UI (webpack/esbuild)

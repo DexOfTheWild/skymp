@@ -14,6 +14,7 @@ This document maps **producers** (what builds each file) to **outputs** under `b
 |----------|----------|-------------|
 | `skymp5-client.js` | CMake target `skymp5-client` -> `yarn build` (webpack) | `build/dist/client/Data/Platform/Plugins/skymp5-client.js` |
 | `skymp5-client-settings.txt` | CMake POST_BUILD script `generate_client_settings.cmake` | `build/dist/client/Data/Platform/Plugins/skymp5-client-settings.txt` |
+| `skymp5-voip-settings.txt` | CMake POST_BUILD script `generate_client_settings.cmake` | `build/dist/client/Data/Platform/Plugins/skymp5-voip-settings.txt` |
 
 Webpack config: [skymp5-client/webpack.config.js](../../skymp5-client/webpack.config.js). Optional `DEPLOY_PLUGIN=true` copies the plugin to `Data/Platform/PluginsDev` in the game folder.
 

@@ -1,0 +1,25 @@
+{
+  "name": "skymp5-voip",
+  "version": "0.0.0",
+  "description": "Local VoIP development services for SkyMP",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "tsc --noEmit && node scripts/build.js",
+    "start": "node ../build/dist/voip/voip-dev-server.js",
+    "test": "node scripts/run-tests.js"
+  },
+  "dependencies": {
+    "koa": "^2.16.1",
+    "koa-router": "^12.0.0",
+    "koa-static": "^5.0.0",
+    "livekit-client": "^2.0.0",
+    "livekit-server-sdk": "^2.0.0",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.14",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.2.2"
+  }
+}

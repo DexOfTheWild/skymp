@@ -25,7 +25,11 @@ if(BUILD_CLIENT)
 
   add_custom_command(
     TARGET skymp5-client POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -DCLIENT_SETTINGS_JSON_PATH=${CMAKE_BINARY_DIR}/dist/client/Data/Platform/Plugins/skymp5-client-settings.txt -DOFFLINE_MODE=${OFFLINE_MODE} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/generate_client_settings.cmake
+    COMMAND ${CMAKE_COMMAND}
+      -DCLIENT_SETTINGS_JSON_PATH=${CMAKE_BINARY_DIR}/dist/client/Data/Platform/Plugins/skymp5-client-settings.txt
+      -DVOIP_SETTINGS_JSON_PATH=${CMAKE_BINARY_DIR}/dist/client/Data/Platform/Plugins/skymp5-voip-settings.txt
+      -DOFFLINE_MODE=${OFFLINE_MODE}
+      -P ${CMAKE_SOURCE_DIR}/cmake/scripts/generate_client_settings.cmake
   )
 else()
   add_custom_target(skymp5-client ALL
